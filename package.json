@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/azhen44/tinyapp/issues"
   },
-  "homepage": "https://github.com/azhen44/tinyapp#readme"
+  "homepage": "https://github.com/azhen44/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
