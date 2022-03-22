@@ -25,7 +25,7 @@ app.post("/urls", (req, res) => {
   const addLongURL = req.body.longURL;
   const addShortURL = generateRandomString();
   urlDatabase[addShortURL] = addLongURL;
-  console.log(urlDatabase);
+  console.log('Item added ', urlDatabase);
   res.redirect(`/urls/${addShortURL}`);       
 });
 
@@ -43,7 +43,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL)
+  console.log("Redirecting to" , longURL)
   res.redirect(longURL);
 });
 
@@ -55,11 +55,22 @@ app.get("/u/:shortURL", (req, res) => {
 //DELETE------------------------------------------------
 app.post('/urls/:shortURL/delete', (req, res) => { 
   const templateVars = { shortURL: req.params.shortURL}
-  console.log(templateVars);
+  //console.log(templateVars);
   delete urlDatabase[req.params.shortURL];
-  console.log(urlDatabase)
+  console.log('Item Deleted ',urlDatabase)
   res.redirect('/urls');
 });
+
+//UPDATE ---------------------------------------------------
+app.post('/urls/:shortURL', (req, res) => { 
+  const updateLongURL = req.body.newURL;
+  console.log(updateLongURL)
+  urlDatabase[req.params.shortURL] = updateLongURL;
+  console.log('Item Updated ', urlDatabase)
+  res.redirect('/urls')
+});
+
+
 
 
 
