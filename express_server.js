@@ -23,14 +23,24 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// app.get("/urls/:shortURL", (req, res) => {
+//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+//   res.render("urls_show", templateVars);
+// });
+
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-  res.render("urls_show", templateVars);
+  const longURL = urlDatabase[req.params.shortURL];
+  console.log(longURL)
+  res.redirect(longURL);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  const addLongURL = req.body.longURL;
+  const addShortURL = generateRandomString();
+  urlDatabase[addShortURL] = addLongURL;
+  //console.log(urlDatabase);
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
+
 });
 
 app.listen(PORT, () => {
