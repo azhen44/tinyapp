@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+const cookieParser = require('cookie-parser');
 app.set('view engine', 'ejs');
 const bodyParser = require("body-parser");
 const res = require('express/lib/response');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 
 const urlDatabase = {
@@ -17,8 +19,12 @@ app.get('/', (req, res) => {
 });
 
 /// CREATE -------------------------------------
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+app.get("/urls/new", (req, res) => {  
+  const templateVars = {
+    username: req.cookies["username"],
+    // ... any other vars
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -58,6 +64,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   //console.log(templateVars);
   delete urlDatabase[req.params.shortURL];
   console.log('Item Deleted ',urlDatabase)
+  console.log(req.cookies)
   res.redirect('/urls');
 });
 
@@ -67,10 +74,19 @@ app.post('/urls/:shortURL', (req, res) => {
   console.log(updateLongURL)
   urlDatabase[req.params.shortURL] = updateLongURL;
   console.log('Item Updated ', urlDatabase)
+  console.log(req.cookies)
   res.redirect('/urls')
+  
 });
 
+// LOGIN ---------------------------------------------------
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  //console.log(username)
+  //console.log('Cookies :', req.cookies)
+  res.redirect('/urls')
 
+})
 
 
 
