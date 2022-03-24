@@ -6,13 +6,24 @@ app.set('view engine', 'ejs');
 const bodyParser = require("body-parser");
 const res = require('express/lib/response');
 const req = require('express/lib/request');
+const { signedCookie } = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+// const urlDatabase = {
+//   "b2xVn2":"http://www.lighthouselabs.ca",
+//   "9sm5xK":"http://www.google.com",
+// }
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: 'userRandomID'
+},
+  "9sm5xK": {
+    longURL : "http://www.google.com",
+    userID : 'userRandomID'
+  }
 }
 
 const users ={
@@ -39,72 +50,90 @@ app.get('/', (req, res) => {
 /// CREATE -------------------------------------
 app.get("/urls/new", (req, res) => {  
   const templateVars = {
-    //users: req.cookies["username"],
     users: users,
     cookies: req.cookies,
-    // ... any other vars
   };
-  'TESTING'
+  if (!req.cookies.user_id) {
+    throw new Error('Need to Log in')
+
+  } 
   res.render("urls_new", templateVars);
   
 });
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    throw new Error('Need to Log in')
+  } 
   const addLongURL = req.body.longURL;
   const addShortURL = generateRandomString();
-  urlDatabase[addShortURL] = addLongURL;
+  urlDatabase[addShortURL] = {userID: req.cookies.user_id, longURL:addLongURL};
   console.log('Item added ', urlDatabase);
   res.redirect(`/urls/${addShortURL}`);       
 });
 
 //READ -----------------------------------------
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase,
+  const usersURL = {}
+  for (const shorturl in urlDatabase) {
+    if (urlDatabase[shorturl]['userID'] === req.cookies.user_id){
+      usersURL[shorturl] = urlDatabase[shorturl].longURL
+    }
+  }
+  const templateVars = { urls: usersURL,
     users: users,
     cookies: req.cookies,
    };
-  //console.log(templateVars)
-  //console.log('users', users)
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-  cookies: req.cookies,
-  //username: req.cookies["username"],
-  users: users,
-}
-  res.render("urls_show", templateVars);
+  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
+      cookies: req.cookies,
+      users: users,
+    }
+      res.render("urls_show", templateVars);
+      return;
+  }
+  res.send('404 Error. Page not found.')
+
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   console.log("Redirecting to" , longURL)
   res.redirect(longURL);
 });
 
-// app.get("/url_show", (req, res) => {
-//   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-//   res.render("urls_show", templateVars);
-// });
 
 //DELETE------------------------------------------------
 app.post('/urls/:shortURL/delete', (req, res) => { 
-  //console.log(templateVars);
+if (urlDatabase[req.params.shortURL].userID === req.cookies.user_id) {
   delete urlDatabase[req.params.shortURL];
   console.log('Item Deleted ',urlDatabase)
-  console.log(req.cookies)
-  res.redirect('/urls');
+   //console.log(req.cookies)
+   res.redirect('/urls');
+   return;
+}
+
+  res.status(401)
+  res.send('Unauthorized')
+
+ 
 });
 
 //UPDATE ---------------------------------------------------
 app.post('/urls/:shortURL', (req, res) => { 
-  const updateLongURL = req.body.newURL;
-  console.log(updateLongURL)
-  urlDatabase[req.params.shortURL] = updateLongURL;
-  console.log('Item Updated ', urlDatabase)
-  console.log(req.cookies)
-  res.redirect('/urls')
+  if (urlDatabase[req.params.shortURL].userID === req.cookies.user_id) {
+    const updateLongURL = req.body.newURL;
+    urlDatabase[req.params.shortURL].longURL = updateLongURL;
+    console.log('Item Updated ', urlDatabase)
+    res.redirect('/urls')
+    return;
+  }
+  res.status(401)
+  res.send('Unauthorized')
   
 });
 
@@ -201,6 +230,19 @@ function generateRandomString() {
   return result;
 }
 
+// Check url Ownership -----------------------------------------
+function checkURLOwner(cookieid) {
+  for (const shorturl in urlDatabase) {
+    if (urlDatabase[shorturl]['userID'] === cookieid){
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+
 // Email Checker -------------------------------------------------
 function emailChecker (email) {
   if (!email) {
@@ -214,3 +256,9 @@ function emailChecker (email) {
   return false
 };
 
+// Error Catch  ---------------------------------------------
+app.use((err, req, res, next) => {
+  console.log('eror handling middlewage')
+  console.error(err.message)
+  res.status(500).send(err.message)
+})

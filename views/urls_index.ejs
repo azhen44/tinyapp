@@ -10,6 +10,10 @@
 </head>
 <body>
   <%- include('partials/_header') %>
+  <% if(!cookies.user_id) { %>
+    <h1 class="text-center">Please Login to see Links</h1>
+    <% } %>
+  
   <main style="margin: 1em;">
     <h3>My URLs</h3>
     <table class="table">

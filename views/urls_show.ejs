@@ -18,16 +18,26 @@
     <div class="card-footer text-muted"></div>
   </div>
 
+  <div class="text-center">
+    <% if (!cookies.user_id) { %>
+      <h1>Please Log in for more features</h1>
+    <%} else { %>
 
-<div>
-  <form method="POST" action="/urls/<%=shortURL%>">
-    <p class="text-center"
-      <label>Enter new URL</label>
-      <input name="newURL">
-      <button class="btn btn-primary">Update</button>
-  </p>
-  </form>
-</div>
+      <div>
+        <form method="POST" action="/urls/<%=shortURL%>">
+          <p class="text-center"
+            <label>Enter new URL</label>
+            <input name="newURL">
+            <button class="btn btn-primary">Update</button>
+        </p>
+        </form>
+      </div>
+        
+      
+    <%}%>
+
+  </div>
+
 
 
 
