@@ -11,31 +11,29 @@
       </div>
     </div>
 
-
-
-
-
-    <% if(username){ %>
-      <h1><%= username   %></h1>
-      <form method="POST" action="/logout">
-        <button>Logout</button>
-      </form>
-
-    <% } else{ %>  
-      <div class="float-right">
-        <form method="POST" action="/login">
-          <label >Username</label>
-          <input  name="username">
-          <button>Login</button>
+    <div class="text-right">
+      
+      <% if (cookies.user_id){ %>
+        <%= users[cookies.user_id].email%>
+        <form method="POST" action="/logout">
+          <button type="submit">Logout</button>
         </form>
-      </div>
-   <% } %>
+      <% } else { %> 
+        <form method="GET" action="/login">
+          <button type="submit">Login</button>
+        </form>
+        <form method="GET" action="/register">
+          <button type="submit">Register</button>
+        </form>
 
 
-
-
-
+      <% } %>
  
+
+      
+
+
+    </div>
 
   </nav>
 </header>

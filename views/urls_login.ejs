@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <%- include('partials/_header') %>
+
 
 <head>
   <!-- Bootstrap CSS -->
@@ -9,25 +9,19 @@
 </head>
 
 <body>
-  <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-      </div>
-    <div class="card-footer text-muted"></div>
+  <%- include('partials/_header') %>
+  <h3>Login</h3>
+  <div class="text-middle">
+      <form method="POST" action="/login" >
+        <label>Username</label>
+        <input type="email" name="email"></input>
+        <label>Password</label>
+        <input type="password" name="password"></input>
+        <button type="submit">Login</button>
+      </form>
   </div>
 
 
-<div>
-  <form method="POST" action="/urls/<%=shortURL%>">
-    <p class="text-center"
-      <label>Enter new URL</label>
-      <input name="newURL">
-      <button class="btn btn-primary">Update</button>
-  </p>
-  </form>
-</div>
 
 
 
