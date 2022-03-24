@@ -44,7 +44,7 @@ app.get("/urls/new", (req, res) => {
     cookies: req.cookies,
     // ... any other vars
   };
-  
+  'TESTING'
   res.render("urls_new", templateVars);
   
 });
