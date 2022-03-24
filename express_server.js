@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const res = require('express/lib/response');
 const req = require('express/lib/request');
 const { signedCookie } = require('cookie-parser');
+const bcrypt = require('bcryptjs')
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
@@ -30,12 +31,12 @@ const users ={
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "123"
+    password: bcrypt.hashSync("123",10)
   },
   "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk",10)
   },
 
 };
@@ -150,6 +151,7 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
+ 
 
   if(!loginEmail){
     res.status(403)
@@ -164,7 +166,7 @@ app.post('/login', (req, res) => {
 
   for (const user in users) {
     values = Object.values(users[user])
-    if (values.includes(loginEmail) && users[user].password === loginPassword) {
+    if (values.includes(loginEmail) && bcrypt.compareSync(loginPassword, users[user].password)) {
       res.cookie('user_id', users[user].id)
       res.redirect('/urls')
       return;
@@ -195,7 +197,8 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const userID = generateRandomString();
   const regEmail = req.body.email;
-  const regPassword = req.body.password;
+  const regPassword = bcrypt.hashSync(req.body.password,10);
+  console.log(regPassword);
 
   if (emailChecker(regEmail)){
     res.status(400)
