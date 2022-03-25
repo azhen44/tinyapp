@@ -10,7 +10,7 @@
 </head>
 <body>
   <%- include('partials/_header') %>
-  <% if(!cookies) { %>
+  <% if(!cookies) { %> <!-- Check if someone is logged in-->
     <h1 class="text-center">Please Login to see Links</h1>
     <% } %>
   
@@ -26,7 +26,8 @@
         </tr>
       </thead>
       <tbody>
-        <% for(let url in urls) { %>
+        <!-- Display URLs to users logged in. Contains Edit and Delete button.-->
+        <% for(let url in urls) { %> 
           <tr>
             <td><%= url %></td> 
             <td><%= urls[url] %></td>
