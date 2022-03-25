@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+const helper = require('./helper.js')
 const cookieParser = require('cookie-parser');
 app.set('view engine', 'ejs');
 const bodyParser = require("body-parser");
@@ -75,7 +76,7 @@ app.post("/urls", (req, res) => {
     throw new Error('Need to Log in')
   } 
   const addLongURL = req.body.longURL;
-  const addShortURL = generateRandomString();
+  const addShortURL = helper.generateRandomString();
   urlDatabase[addShortURL] = {userID: req.session.user_id, longURL:addLongURL};
   console.log('Item added ', urlDatabase);
   res.redirect(`/urls/${addShortURL}`);       
@@ -102,8 +103,9 @@ app.get("/urls/:shortURL", (req, res) => {
       cookies: req.session.user_id,
       users: users,
     }
-      res.render("urls_show", templateVars);
-      return;
+    console.log('templateVars from get shows page ', templateVars)
+    res.render("urls_show", templateVars);
+    return;
   }
   res.send('404 Error. Page not found.')
 
@@ -112,7 +114,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   console.log("Redirecting to" , longURL)
-  res.redirect(longURL);
+  res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
 
@@ -165,16 +167,18 @@ app.post('/login', (req, res) => {
     res.send('Empty login')
     return;
   }
-  if(!emailChecker(loginEmail)) {
+  if(!helper.emailChecker(loginEmail, users)) {
     res.status(403)
     res.send('No registered email.')
     return;
   }
+  
+  const currentUserID = helper.getUserByEmail(loginEmail, users);
 
   for (const user in users) {
     values = Object.values(users[user])
     if (values.includes(loginEmail) && bcrypt.compareSync(loginPassword, users[user].password)) {
-      req.session.user_id = users[user].id
+      req.session.user_id = currentUserID
       res.redirect('/urls')
       return;
     }
@@ -201,12 +205,12 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const userID = generateRandomString();
+  const userID = helper.generateRandomString();
   const regEmail = req.body.email;
   const regPassword = bcrypt.hashSync(req.body.password,10);
   console.log(regPassword);
 
-  if (emailChecker(regEmail)){
+  if (helper.emailChecker(regEmail, users)){
     res.status(400)
     res.send('ERROR USER ALRDY EXISTS or Empty')
     return;
@@ -228,29 +232,7 @@ app.listen(PORT, () => {
   console.log(`example app listening on port ${PORT}`)
 });
 
-// GENERATE RANDOM STRING -------------------------------
-function generateRandomString() {
-  let result = '';
-  const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  for (let i = 0; i < 6; i ++) {
-    randomChar = char.charAt(Math.floor(Math.random() * char.length))
-    result += randomChar;
-  }
-  return result;
-}
 
-// Email Checker -------------------------------------------------
-function emailChecker (email) {
-  if (!email) {
-    return true;
-  }
-  for (const user in users) {
-    if (email === users[user]['email']) {
-      return true;
-    }
-  }
-  return false
-};
 
 // Error Catch  ---------------------------------------------
 app.use((err, req, res, next) => {
