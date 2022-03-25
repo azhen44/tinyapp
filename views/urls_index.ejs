@@ -10,7 +10,7 @@
 </head>
 <body>
   <%- include('partials/_header') %>
-  <% if(!cookies.user_id) { %>
+  <% if(!cookies) { %>
     <h1 class="text-center">Please Login to see Links</h1>
     <% } %>
   

@@ -13,8 +13,8 @@
 
     <div class="text-right">
       
-      <% if (cookies.user_id){ %>
-        <%= users[cookies.user_id].email%>
+      <% if (cookies){ %>
+        <%= users[cookies].email%>
         <form method="POST" action="/logout">
           <button type="submit">Logout</button>
         </form>
