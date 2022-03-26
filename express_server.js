@@ -42,11 +42,6 @@ const users = {
   },
 
 };
- 
-app.get('/', (req, res) => {
-  res.send('hello!');
-});
-
 
 
 
@@ -91,7 +86,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+  if (urlDatabase[req.params.shortURL].userID === req.session.user_id) {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
       cookies: req.session.user_id,
       users: users,
@@ -99,13 +94,19 @@ app.get("/urls/:shortURL", (req, res) => {
     res.render("urls_show", templateVars);
     return;
   }
-  res.send('404 Error. Page not found.');
+  res.status(404);
+  res.send('404 Error. No links found. Please login to continue');
 
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(urlDatabase[req.params.shortURL].longURL);
+  if (urlDatabase[req.params.shortURL]) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(longURL);
+  } else {
+    res.status(404);
+    res.send('404 Error. Page not found.')
+  }
 });
 
 
@@ -208,6 +209,11 @@ app.post("/register", (req, res) => {
     return;
   }
   
+});
+
+// redirects to urls page.
+app.get('/', (req, res) => {
+  res.redirect('/urls');
 });
 
 
